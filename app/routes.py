@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from app import db
 from app.models import User
 
@@ -33,11 +33,16 @@ def login():
 
         if user and user.check_password(password):
             login_user(user)
-            return redirect(url_for("dashboard"))
+            return redirect(url_for("auth.dashboard"))
         else:
             flash("Invalid username or password", "danger")
 
     return render_template("login.html")
+  
+@auth_bp.route("/dashboard")
+@login_required
+def dashboard():
+  return render_template("dashboard.html", username=current_user.username)
 
 @auth_bp.route("/logout")
 @login_required
