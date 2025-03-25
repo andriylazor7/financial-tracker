@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Incomes</h2>
+<a href="{{ url_for('finance.add_income') }}" class="btn btn-success mb-3">Add Income</a>
+<ul class="list-group">
+    {% for income in incomes %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ income.amount }} - {{ income.category }} - {{ income.date }}</span>
+            <form action="{{ url_for('finance.delete_income', income_id=income.id) }}" method="POST" class="ms-2">
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -19,8 +19,9 @@ def create_app():
     migrate.init_app(app, db)
     login_manager.init_app(app)
 
-    from app.routes import auth_bp  
+    from app.routes import auth_bp, finance_bp
     app.register_blueprint(auth_bp)
+    app.register_blueprint(finance_bp, url_prefix="/finance")
 
     with app.app_context():
       try:
