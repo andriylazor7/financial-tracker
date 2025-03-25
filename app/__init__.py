@@ -10,7 +10,7 @@ login_manager.login_view = 'auth.login'
 migrate = Migrate()
 
 def create_app():
-    app = Flask(__name__, template_folder="templates_", static_folder="static_")
+    app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///finance_tracker.db"
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "your_secret_key_here")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
