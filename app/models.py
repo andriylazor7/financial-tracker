@@ -23,4 +23,22 @@ class Category(db.Model):
   def __repr__(self):
     return f'<Category {self.name}>'
 
+class Expense(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+  amount = db.Column(db.Float, nullable=False)
+  category = db.Column(db.String(100), nullable=False)
+  date = db.Column(db.DateTime, default=datetime.utcnow)
+  description = db.Column(db.String(255))
   
+  user = db.relationship('User', backref=db.backref('expenses', lazy=True))
+  
+class Income(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+  amount = db.Column(db.Float, nullable=False)
+  category = db.Column(db.String(100), nullable=False)
+  date = db.Column(db.DateTime, default=datetime.utcnow)
+  description = db.Column(db.String(255))
+  
+  user = db.relationship('User', backref=db.backref('incomes', lazy=True))
