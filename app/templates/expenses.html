@@ -1,15 +1,90 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}Your Expenses{% endblock %}
+
 {% block content %}
-<h2>Expenses</h2>
-<a href="{{ url_for('finance.add_expense') }}" class="btn btn-primary mb-3">Add Expense</a>
-<ul class="list-group">
-    {% for expense in expenses %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>{{ expense.amount }} - {{ expense.category }} - {{ expense.date }}</span>
-            <form action="{{ url_for('finance.delete_expenses', expense_id=expense.id) }}" method="POST" class="ms-2">
-                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-            </form>
-        </li>
-    {% endfor %}
-</ul>
+<div class="container mt-4">
+    <h2>Your Expenses</h2>
+    
+    <form method="GET" action="{{ url_for('finance.expenses') }}" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label for="category" class="form-label">Category:</label>
+            <select name="category" id="category" class="form-select">
+                <option value="">All</option>
+                {% for category in categories %}
+                    <option value="{{ category }}" {% if request.args.get('category') == category %}selected{% endif %}>
+                        {{ category }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="filter_date" class="form-label">Date:</label>
+            <input type="date" name="filter_date" id="filter_date" class="form-control"
+                    value="{{ request.args.get('filter_date', '') }}">
+        </div>
+        <div class="col-md-3">
+            <label for="amount" class="form-label">Max Amount:</label>
+            <input type="number" name="amount" id="amount" class="form-control" placeholder="Enter max amount"
+                   value="{{ request.args.get('amount', '') }}">
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-light border-secondary w-100">Filter</button>
+        </div>
+    </form>
+
+    <table class="table table-bordered">
+        <thead class="table-danger">
+            <tr>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.category }}</td>
+                <td>${{ expense.amount }}</td>
+                <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ expense.description }}</td>
+                <td>
+                    <form action="{{ url_for('finance.delete_expenses', expense_id=expense.id) }}" method="POST">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3 class="mt-4">Add Expense</h3>
+    <form method="POST" action="{{ url_for('finance.add_expense') }}" class="row g-3">
+        <div class="col-12 d-flex gap-3">
+            <div class="flex-grow-1">
+                <label for="category" class="form-label">Category:</label>
+                <input type="text" name="category" id="category" class="form-control" required>
+            </div>
+            <div class="flex-grow-1">
+                <label for="amount" class="form-label">Amount:</label>
+                <input type="number" name="amount" id="amount" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+                <label for="date" class="form-label">Date:</label>
+                <input type="date" name="date" id="date" class="form-control" value="{{ request.args.get('date', today) }}">
+            </div>                       
+        </div>
+
+        <div class="col-12">
+            <label for="description" class="form-label">Description:</label>
+            <input type="text" name="description" id="description" class="form-control">
+        </div>
+
+        <div class="col-12 d-flex justify-content-end">
+            <button type="submit" class="btn btn-danger w-100">Add Expense</button>
+        </div>
+    </form>
+</div>
 {% endblock %}

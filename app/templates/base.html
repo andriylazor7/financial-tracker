@@ -33,6 +33,14 @@
             max-width: 900px;
             margin-top: 20px;
         }
+        .container input select {
+            border-color: rgb(239, 240, 242);
+        }
+        .container input:focus, .container select:focus {
+            outline: none;
+            box-shadow: none;
+            border-color: rgb(239, 240, 242)
+        }
         footer {
             text-align: center;
             padding: 15px;
@@ -50,8 +58,8 @@
         <a class="navbar-brand" href="{{ url_for('auth.dashboard') }}">Finance Tracker</a>
         {% if current_user.is_authenticated %}
         <div>
-            <a class="btn btn-outline-primary me-2 btn-sm d-inline-block" href="{{ url_for('finance.expenses') }}">Your Expenses</a>
-            <a class="btn btn-outline-success me-2 btn-sm d-inline-block" href="{{ url_for('finance.incomes') }}">Your Incomes</a>
+            <a class="btn btn-light me-2 btn-sm d-inline-block" href="{{ url_for('finance.expenses') }}">Your Expenses</a>
+            <a class="btn btn-light me-2 btn-sm d-inline-block" href="{{ url_for('finance.incomes') }}">Your Incomes</a>
             <a class="logout-btn btn-sm d-inline-block" href="{{ url_for('auth.logout') }}">Logout</a>            
         </div>
         {% endif %}
