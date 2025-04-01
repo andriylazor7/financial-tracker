@@ -49,6 +49,43 @@
             color: #666;
             width: 100%;
         }
+        .table-container {
+            display: flex;
+            gap: 20px;
+        }
+    
+        .table-wrapper {
+            flex: 1;
+            min-width: 0;
+        }
+    
+        table {
+            table-layout: fixed;
+            width: 100%;
+        }
+    
+        th, td {
+            text-align: center;
+            word-wrap: break-word;
+            white-space: nowrap;
+            padding: 8px;
+        }
+    
+        td:nth-child(4) { 
+            white-space: normal;
+        } 
+        .table td {
+            word-wrap: break-word;
+            white-space: normal;
+            max-width: 200px;
+            overflow-wrap: break-word;
+        }
+        
+        .table th, .table td {
+            padding: 8px;
+            text-align: left;
+            vertical-align: middle;
+        }               
     </style>
 </head>
 <body>
