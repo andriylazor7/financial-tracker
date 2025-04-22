@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, abort, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
-from app.models import User, Category, Expense, Income
-from datetime import datetime
+from app.models import User, Expense, Income, RecurringTransaction
+from datetime import date, datetime, timedelta
 
 auth_bp = Blueprint("auth", __name__)
 finance_bp = Blueprint("finance", __name__)
@@ -44,9 +44,13 @@ def login():
 @auth_bp.route("/dashboard")
 @login_required
 def dashboard():
+    apply_recurring_transactions(current_user)
     expenses = Expense.query.filter_by(user_id=current_user.id).all()
     incomes = Income.query.filter_by(user_id=current_user.id).all()
-    return render_template("dashboard.html", username=current_user.username, expenses=expenses, incomes=incomes)
+    recurring_expenses = RecurringTransaction.query.filter_by(user_id=current_user.id, type='expense').all()
+    recurring_incomes = RecurringTransaction.query.filter_by(user_id=current_user.id, type='income').all()
+    
+    return render_template("dashboard.html", username=current_user.username, expenses=expenses, incomes=incomes, recurring_expenses=recurring_expenses, recurring_incomes=recurring_incomes)
 
 @auth_bp.route("/logout")
 @login_required
@@ -179,3 +183,111 @@ def delete_income(income_id):
     db.session.commit()
     flash("Income deleted successfully!", "success")
     return redirect(url_for("finance.incomes"))
+
+def add_months(source_date, months):
+    month = source_date.month - 1 + months
+    year = source_date.year + month // 12
+    month = month % 12 + 1
+    day = min(source_date.day, [31,
+        29 if year % 4 == 0 and not year % 100 == 0 or year % 400 == 0 else 28,
+        31,30,31,30,31,31,30,31,30,31][month-1])
+    return date(year, month, day)
+
+def apply_recurring_transactions(user):
+    today = date.today()
+    recurring_transactions = RecurringTransaction.query.filter_by(user_id=user.id).all()
+
+    for r in recurring_transactions:
+        if not should_apply(r.last_applied, r.frequency):
+            continue
+
+        months_passed = (today.year - r.start_date.year) * 12 + (today.month - r.start_date.month)
+        expected_date = add_months(r.start_date, months_passed)
+        if expected_date > today:
+            continue
+
+        model = Expense if r.type == 'expense' else Income
+        existing = model.query.filter_by(
+            user_id=user.id,
+            recurring_id=r.id,
+            date=expected_date
+        ).first()
+
+        if not existing:
+            new_transaction = model(
+                category=r.category,
+                amount=r.amount,
+                date=expected_date,
+                description=r.description,
+                user_id=user.id,
+                recurring_id=r.id
+            )
+            db.session.add(new_transaction)
+            r.last_applied = expected_date  
+
+    db.session.commit()
+
+
+@finance_bp.route('/recurring')
+@login_required
+def recurring_transactions():
+    recurring = RecurringTransaction.query.filter_by(user_id=current_user.id).all()
+    return render_template('recurring.html', recurring_transactions=recurring)
+
+@finance_bp.route('/recurring', methods=['POST'])
+@login_required
+def add_recurring():
+    type_ = request.form.get('type')
+    amount = request.form.get('amount')
+    category = request.form.get('category')
+    frequency = request.form.get('frequency')
+    start_date = request.form.get('start_date')
+    description = request.form.get('description')
+
+    try:
+        amount = float(amount)
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        flash('Invalid input for amount or date.', 'danger')
+        return redirect(url_for('finance.recurring_transactions'))
+
+    recurring = RecurringTransaction(
+        user_id=current_user.id,
+        type=type_,
+        amount=amount,
+        category=category,
+        frequency=frequency,
+        start_date=start_date,
+        description=description
+    )
+    db.session.add(recurring)
+    db.session.commit()
+    flash('Recurring transaction added successfully.', 'success')
+    return redirect(url_for('finance.recurring_transactions'))
+
+@finance_bp.route('/recurring/delete/<int:recurring_id>', methods=['POST'])
+@login_required
+def delete_recurring(recurring_id):
+    recurring = RecurringTransaction.query.get_or_404(recurring_id)
+    if recurring.user_id != current_user.id:
+        abort(403)
+    
+    db.session.delete(recurring)
+    db.session.commit()
+    flash('Recurring transaction deleted.', 'info')
+    return redirect(url_for('finance.recurring_transactions'))
+
+def should_apply(last_applied, freq):
+    today = date.today()
+    if not last_applied:
+        return True
+
+    if freq == "daily":
+        return today > last_applied
+    elif freq == "weekly":
+        return (today - last_applied).days >= 7
+    elif freq == "monthly":
+        return today.month != last_applied.month or today.year != last_applied.year
+    return False
+
+

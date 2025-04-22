@@ -55,5 +55,63 @@
             </table>
         </div>
     </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h5>Recurring Expenses</h5>
+            <table class="table table-bordered">
+                <thead class="table-danger">
+                    <tr>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Freq</th>
+                        <th>Start</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rexp in recurring_expenses %}
+                    <tr>
+                        <td>{{ rexp.category }}</td>
+                        <td>${{ rexp.amount }}</td>
+                        <td>{{ rexp.frequency }}</td>
+                        <td>{{ rexp.start_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ rexp.description }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center">No recurring expenses.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            <h5>Recurring Incomes</h5>
+            <table class="table table-bordered">
+                <thead class="table-success">
+                    <tr>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Freq</th>
+                        <th>Start</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rinc in recurring_incomes %}
+                    <tr>
+                        <td>{{ rinc.category }}</td>
+                        <td>${{ rinc.amount }}</td>
+                        <td>{{ rinc.frequency }}</td>
+                        <td>{{ rinc.start_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ rinc.description }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center">No recurring incomes.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

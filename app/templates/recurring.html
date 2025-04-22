@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Recurring Transactions{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Recurring Transactions</h2>
+
+    <table class="table table-bordered">
+        <thead class="table-info">
+            <tr>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Frequency</th>
+                <th>Start Date</th>
+                <th>Last Applied</th>
+                <th>Description</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rt in recurring_transactions %}
+            <tr>
+                <td>{{ rt.category }}</td>
+                <td>${{ rt.amount }}</td>
+                <td>{{ rt.frequency }}</td>
+                <td>{{ rt.start_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ rt.last_applied.strftime('%Y-%m-%d') if rt.last_applied else '—' }}</td>
+                <td>{{ rt.description }}</td>
+                <td>
+                    <form action="{{ url_for('finance.delete_recurring', recurring_id=rt.id) }}" method="POST">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3 class="mt-4">Add Recurring Transaction</h3>
+    <form method="POST" action="{{ url_for('finance.add_recurring') }}" class="row g-3">
+        <div class="col-md-2">
+          <label class="form-label">Category:</label>
+          <input type="text" name="category" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Amount:</label>
+            <input type="number" step="0.01" name="amount" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Type:</label>
+            <select name="type" class="form-select" required>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+            </select>
+        </div>
+        
+        <div class="col-md-2">
+            <label class="form-label">Frequency:</label>
+            <select name="frequency" class="form-select" required>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Start Date:</label>
+            <input type="date" name="start_date" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Description:</label>
+            <input type="text" name="description" class="form-control">
+        </div>
+        <div class="col-12 d-flex justify-content-end">
+            <button type="submit" class="btn btn-info w-100">Add Recurring</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

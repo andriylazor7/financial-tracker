@@ -30,6 +30,7 @@ class Expense(db.Model):
   category = db.Column(db.String(100), nullable=False)
   date = db.Column(db.DateTime, default=datetime.utcnow)
   description = db.Column(db.String(255))
+  recurring_id = db.Column(db.Integer, nullable=True)
   
   user = db.relationship('User', backref=db.backref('expenses', lazy=True))
   
@@ -40,5 +41,20 @@ class Income(db.Model):
   category = db.Column(db.String(100), nullable=False)
   date = db.Column(db.DateTime, default=datetime.utcnow)
   description = db.Column(db.String(255))
+  recurring_id = db.Column(db.Integer, nullable=True)
   
   user = db.relationship('User', backref=db.backref('incomes', lazy=True))
+  
+class RecurringTransaction(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+  type = db.Column(db.String(10), nullable=False)  
+  amount = db.Column(db.Float, nullable=False)
+  category = db.Column(db.String(100), nullable=False)
+  description = db.Column(db.String(255))
+  start_date = db.Column(db.Date, nullable=False)
+  frequency = db.Column(db.String(20), nullable=False)  
+  last_applied = db.Column(db.Date, nullable=True)
+
+  user = db.relationship('User', backref=db.backref('recurring_transactions', lazy=True))
+  
