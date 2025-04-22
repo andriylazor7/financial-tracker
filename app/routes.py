@@ -10,18 +10,18 @@ finance_bp = Blueprint("finance", __name__)
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        username = request.form.get("username")
+        name = request.form['name']
+        email = request.form.get("email")
         password = request.form.get("password")
 
-        if User.query.filter_by(username=username).first():
-            flash("Username already exists!", "danger")
+        if User.query.filter_by(email=email).first():
+            flash("Email already registered!", "danger")
             return redirect(url_for("auth.register"))
 
-        new_user = User(username=username)
+        new_user = User(name=name, email=email)
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
-        flash("Registration successful! Please log in.", "success")
         return redirect(url_for("auth.login"))
 
     return render_template("register.html")
@@ -29,15 +29,15 @@ def register():
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form.get("username")
+        email = request.form.get("email")
         password = request.form.get("password")
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(email=email).first()
 
         if user and user.check_password(password):
             login_user(user)
             return redirect(url_for("auth.dashboard"))
         else:
-            flash("Invalid username or password", "danger")
+            flash("Invalid email or password", "danger")
 
     return render_template("login.html")
 
@@ -50,7 +50,7 @@ def dashboard():
     recurring_expenses = RecurringTransaction.query.filter_by(user_id=current_user.id, type='expense').all()
     recurring_incomes = RecurringTransaction.query.filter_by(user_id=current_user.id, type='income').all()
     
-    return render_template("dashboard.html", username=current_user.username, expenses=expenses, incomes=incomes, recurring_expenses=recurring_expenses, recurring_incomes=recurring_incomes)
+    return render_template("dashboard.html", name= current_user.name, email=current_user.email, expenses=expenses, incomes=incomes, recurring_expenses=recurring_expenses, recurring_incomes=recurring_incomes)
 
 @auth_bp.route("/logout")
 @login_required
